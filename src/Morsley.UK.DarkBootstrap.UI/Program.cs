@@ -1,19 +1,19 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddOptions<SmtpSettings>()
+    .Bind(builder.Configuration.GetSection("SmtpSettings"))
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<IValidateOptions<SmtpSettings>, SmtpSettingsValidator>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
 app.UseHsts();
-
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
-app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(

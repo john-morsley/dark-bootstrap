@@ -1,4 +1,4 @@
-namespace DarkBootstrap.Controllers;
+namespace Morsley.UK.DarkBootstrap.UI.Controllers;
 
 public class HomeController : Controller
 {
