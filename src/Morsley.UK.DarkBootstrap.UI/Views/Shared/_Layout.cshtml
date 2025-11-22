@@ -19,13 +19,15 @@
 
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>@ViewData["Title"] - Dark Bootstrap</title>        
+        <title>@ViewData["Title"] - Morsley UK - Dark Bootstrap Template</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/darkly/bootstrap.min.css" integrity="sha384-nNK9n28pDUDDgIiIqZ/MiyO3F4/9vsMtReZK39klb/MtkZI3/LtjSjlmyVPS3KdN" crossorigin="anonymous">        
+        <link rel="stylesheet" href="~/css/morsley_uk.css" />
 
     </head>
 
     <body style="display: flex; flex-direction: column; min-height: 100vh; padding-top: 50px; padding-bottom: 50px;">
 
+        @* Header *@
         <header>
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style="height: 70px;">
                 <div class="container-fluid">
@@ -110,13 +112,17 @@
                 </div>
             </nav>
         </header>
+        @* Header *@
 
+        @* Body *@
         <div class="container mt-4" style="flex: 1;">
             <main role="main" class="pt-3 pb-3">
                 @RenderBody()
             </main>
         </div>
+        @* Body *@
 
+        @* Footer *@
         @if (!isOnMessagePage)
         {
             <footer class="bg-dark text-light fixed-bottom" style="height: 70px; display: flex; align-items: center;">
@@ -125,7 +131,8 @@
                 </div>
             </footer>
         }
-        
+        @* Footer *@
+
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
         @RenderSection("Scripts", required: false)

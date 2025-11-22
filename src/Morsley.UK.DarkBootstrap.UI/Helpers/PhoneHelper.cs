@@ -9,10 +9,8 @@ public class PhoneHelper
         number = number.Trim();
         countryCode = countryCode?.Trim() ?? string.Empty;
 
-        // Combine country code and number
         var fullNumber = countryCode + number;
 
-        // Try to parse the phone number - if it parses successfully, it's valid
         if (PhoneNumber.TryParse(fullNumber, out PhoneNumber? phoneNumber))
         {
             return phoneNumber != null;

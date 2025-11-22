@@ -1,11 +1,3 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using Microsoft.VisualBasic;
-using MimeKit;
-using Morsley.UK.DarkBootstrap.UI.Helpers;
-using Morsley.UK.DarkBootstrap.UI.Validators;
-using Org.BouncyCastle.Asn1.X509;
-
 namespace Morsley.UK.DarkBootstrap.UI.Controllers;
 
 public class MessageController : Controller
@@ -99,7 +91,6 @@ public class MessageController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    //public async Task<IActionResult> Send(string name, string message, string? email = null, string? countryCode = null, string? mobileNumber = null)
     public async Task<IActionResult> Send(SendMessageViewModel sendMessage)
     {
         _logger.LogInformation("Message requested from {Name}: {Message}", sendMessage.Name, sendMessage.Message);
@@ -168,7 +159,6 @@ public class MessageController : Controller
         catch (Exception e)
         {
             _logger.LogError(e, "Error trying to send the message");
-            //    ModelState.AddModelError(string.Empty, "There was a problem sending your message. Please try again later.");
             sendMessage.SendOutcomeStatus = "Failure";
             sendMessage.SendOutcomeMessage = "There was a problem sending your message. Please try again later.";
         }

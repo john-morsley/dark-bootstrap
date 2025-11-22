@@ -150,7 +150,7 @@
                             <input id="DetectedCountryCode" type="hidden" value="@_detectedCountryCode" />
 
                             <div class="mb-3">
-                                <label asp-for="Name" class="form-label">Name <span class="text-muted">(required)</span></label>
+                                <label asp-for="Name" class="form-label">Name <span class="text-muted"><small>(required)</small></span></label>
                                 <input asp-for="Name" type="text" class="form-control @_nameValidity" required />
                                 <div id="name-invalid-feedback" class="invalid-feedback">
                                     Your name is really gonna help me, without it I don't know who I'm talking to!?
@@ -158,7 +158,7 @@
                             </div>
 
                              <div class="mb-3">
-                                <label asp-for="EmailAddress" class="form-label">Email Address <span class="text-muted">(optional, but if you want a reply, I'm gonna need an email or a mobile)</span></label>
+                                <label asp-for="EmailAddress" class="form-label">Email Address <span class="text-muted"><small>(optional, but if you want a reply, I'm gonna need an email or a mobile)</small></span></label>
                                 <input asp-for="EmailAddress" type="email" class="form-control @_emailValidity" />
                                 <div id="email-invalid-feedback" class="invalid-feedback">
                                     Please provide a valid email address (e.g. name@example.com)
@@ -166,7 +166,9 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Mobile Number <span class="text-muted">(optional, but if you want a reply, I'm gonna need an email or a mobile)</span></label>
+                                <label class="form-label">
+                                    Mobile Number <span class="text-muted"><small>(optional, but if you want a reply, I'm gonna need an email or a mobile)</small></span>
+                                </label>
                                 <div class="input-group">
                                     <select asp-for="SelectedCountryCode" class="form-select form-control @_mobileValidity" style="max-width: 180px;">
                                         <option value="+44" selected="+44">+44 (UK)</option>
@@ -207,7 +209,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label asp-for="Message" class="form-label">Message <span class="text-muted">(required)</span></label>
+                                <label asp-for="Message" class="form-label">Message <span class="text-muted"><small>(required)</small></span></label>
                                 <textarea asp-for="Message" class="form-control @_messageValidity" rows="5" required></textarea>
                                 <div class="invalid-feedback">
                                     We're gonna need your message, otherwise why are you trying to contact me!?

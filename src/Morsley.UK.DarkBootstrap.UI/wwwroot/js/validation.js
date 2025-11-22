@@ -17,16 +17,7 @@
 
         let emailInput = $('#' + emailInputId);
         $(emailInput).on('input', function () {
-            clearValidation();
-            var validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@._+%-';
-            var cleaned = '';
-            for (var i = 0; i < this.value.length; i++) {
-                var char = this.value[i];
-                if (validChars.indexOf(char) !== -1) {
-                    cleaned += char;
-                }
-            }
-            this.value = cleaned;
+            clearValidation();            
         });
 
         let countryCodeSelect = $('#SelectedCountryCode');
@@ -49,14 +40,6 @@
         let mobileInput = $('#' + mobileInputId);        
         $(mobileInput).on('input', function () {
             clearValidation();
-            var cleaned = '';
-            for (var i = 0; i < this.value.length; i++) {
-                var char = this.value[i];
-                if (char >= '0' && char <= '9') {
-                    cleaned += char;
-                }
-            }
-            this.value = cleaned;
         });
 
         let messageInput = $('#' + messageInputId);

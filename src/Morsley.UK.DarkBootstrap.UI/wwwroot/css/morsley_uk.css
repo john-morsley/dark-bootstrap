@@ -1,0 +1,13 @@
+/* Custom styles for Morsley UK Dark Bootstrap */
+
+/* Navbar border styling */
+.navbar {
+    border-top: 1px solid #3cec97;
+    border-bottom: 1px solid #3cec97;
+}
+
+/* Footer border styling */
+footer {
+    border-top: 1px solid #3cec97;
+    border-bottom: 1px solid #3cec97;
+}
