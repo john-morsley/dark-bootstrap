@@ -1,8 +1,52 @@
+@model SendMessageViewModel
+
 @{
     ViewData["Title"] = "Message - John Morsley";
+
+    var _detectedCountryCode = Model.DetectedCountryCode;
+
+    var _nameValidity = string.Empty;
+    var _emailValidity = string.Empty;
+    var _mobileValidity = string.Empty; 
+    var _messageValidity = string.Empty;
+
+    var _showAlert = false;
+    var _alertColour = "alert-secondary";
+    var _notification = string.Empty;
+    if (string.IsNullOrEmpty(Model.SendOutcomeStatus))
+    {
+        if (Model.IsValidated)
+        {
+            _nameValidity = "is-valid";
+            _emailValidity = "is-valid";
+            _mobileValidity = "is-valid";
+            _messageValidity = "is-valid";
+            foreach (var problem in Model.Problems)
+            {
+                switch (problem.Item)
+                {
+                    case "Name": _nameValidity = "is-invalid"; break;
+                    case "Email Address": _emailValidity = "is-invalid"; break;
+                    case "Mobile Number": _mobileValidity = "is-invalid"; break;
+                    case "Message": _messageValidity = "is-invalid"; break;
+                }
+            }
+        }
+    }
+    else
+    {
+        _showAlert = true;
+        switch(Model.SendOutcomeStatus)
+        {
+            case "Failure": _alertColour = "alert-danger"; break;
+            case "Success": _alertColour = "alert-success"; break;
+        }
+        _notification = Model.SendOutcomeMessage;
+    }
 }
 
 <style>
+
     .form-control, .form-select {
         background-color: #303030;
         border-color: #444;
@@ -29,27 +73,50 @@
         border-bottom-left-radius: 0.375rem;
     }
     
-    /* Show validation feedback for input groups */
-    .input-group ~ .valid-feedback,
-    .input-group ~ .invalid-feedback {
-        display: block;
-    }
-    
-    .input-group ~ .valid-feedback {
+    .valid-feedback,
+    .invalid-feedback {
         display: none;
     }
-    
-    .input-group ~ .invalid-feedback {
-        display: none;
+
+    #send-message-form .was-validated .form-control:valid,
+    #send-message-form .form-control.is-valid {
+        border-color:#00bc8c;
+        background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2300bc8c' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
     }
-    
-    .input-group:has(.form-control.is-valid) ~ .valid-feedback {
+
+    #send-message-form .was-validated .form-control:valid:focus, 
+    #send-message-form .form-control.is-valid:focus {
+        border-color: #00bc8c;
+        -webkit-box-shadow: 0 0 0 0.2rem rgba(0,188,140,0.25);
+        box-shadow: 0 0 0 0.2rem rgba(0,188,140,0.25)
+    }
+
+    #send-message-form .was-validated .form-control:invalid,
+    #send-message-form .form-control.is-invalid {
+        border-color: #e74c3c;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23e74c3c' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23e74c3c' stroke='none'/%3e%3c/svg%3e");        
+    }
+
+    #send-message-form .was-validated .form-control:invalid:focus,
+    #send-message-form .form-control.is-invalid:focus {
+        border-color: #e74c3c;
+        -webkit-box-shadow: 0 0 0 0.2rem rgba(231,76,60,0.25);
+        box-shadow: 0 0 0 0.2rem rgba(231,76,60,0.25)
+    }
+
+    #SelectedCountryCode {
+        background-image: none !important;
+    }
+
+    /* Show invalid feedback for mobile number when either input is invalid */
+    .input-group:has(.is-invalid) ~ .invalid-feedback {
         display: block;
     }
-    
-    .input-group:has(.form-control.is-invalid) ~ .invalid-feedback {
-        display: block;
+
+    .alert p {
+        margin: 0;
     }
+
 </style>
 
 <section class="hero-section">
@@ -68,81 +135,71 @@
         <div class="row">
             <div class="col-12">
                 <div class="card p-4">
-
-                    @if (ViewData["MessageSent"] is bool sent && sent)
-                    {
-                        <div class="alert alert-success" role="alert">
-                            Your message has been sent.
+                    @if (_showAlert)
+                    {                       
+                        <div class="alert @_alertColour role="alert" style="margin: 0;">
+                            @_notification
                         </div>
                     }
                     else
                     {
-                        <form asp-controller="Message" asp-action="Send" method="post" class="needs-validation" novalidate>
+                        <form id="send-message-form" asp-controller="Message" asp-action="Send" method="post" class="needs-validation" novalidate>
+
                             @Html.AntiForgeryToken()
 
+                            <input id="DetectedCountryCode" type="hidden" value="@_detectedCountryCode" />
+
                             <div class="mb-3">
-                                <label for="name" class="form-label">Name <span class="text-muted">(required)</span></label>
-                                <input type="text" class="form-control" id="name" name="name" required />
-                                <div class="valid-feedback">
-                                    Looks good!
-                                </div>
-                                <div class="invalid-feedback">
+                                <label asp-for="Name" class="form-label">Name <span class="text-muted">(required)</span></label>
+                                <input asp-for="Name" type="text" class="form-control @_nameValidity" required />
+                                <div id="name-invalid-feedback" class="invalid-feedback">
                                     Your name is really gonna help me, without it I don't know who I'm talking to!?
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address <span class="text-muted">(optional, but if you want a reply, I'm gonna need an email or a mobile)</span></label>
-                                <input type="text" class="form-control" id="email" name="email" />
-                                <div class="valid-feedback">
-                                    Looks good!
-                                </div>
-                                <div class="invalid-feedback">
-                                    Please provide a valid email address (e.g., name@example.com).
+                             <div class="mb-3">
+                                <label asp-for="EmailAddress" class="form-label">Email Address <span class="text-muted">(optional, but if you want a reply, I'm gonna need an email or a mobile)</span></label>
+                                <input asp-for="EmailAddress" type="email" class="form-control @_emailValidity" />
+                                <div id="email-invalid-feedback" class="invalid-feedback">
+                                    Please provide a valid email address (e.g. name@example.com)
                                 </div>
                             </div>
 
-                            @{
-                                var detectedCode = ViewData["DetectedCountryCode"] as string;
-                            }
                             <div class="mb-3">
                                 <label class="form-label">Mobile Number <span class="text-muted">(optional, but if you want a reply, I'm gonna need an email or a mobile)</span></label>
                                 <div class="input-group">
-                                    <select class="form-select" id="countryCode" name="countryCode" style="max-width: 180px;">
-                                        <option value="+44" selected="@(detectedCode == "+44")">+44 (UK)</option>
-                                        <option value="+1" selected="@(detectedCode == "+1")">+1 (US/Canada)</option>
-                                        <option value="+61" selected="@(detectedCode == "+61")">+61 (Australia)</option>
-                                        <option value="+64" selected="@(detectedCode == "+64")">+64 (New Zealand)</option>
-                                        <option value="+353" selected="@(detectedCode == "+353")">+353 (Ireland)</option>
-                                        <option value="+33" selected="@(detectedCode == "+33")">+33 (France)</option>
-                                        <option value="+49" selected="@(detectedCode == "+49")">+49 (Germany)</option>
-                                        <option value="+34" selected="@(detectedCode == "+34")">+34 (Spain)</option>
-                                        <option value="+39" selected="@(detectedCode == "+39")">+39 (Italy)</option>
-                                        <option value="+31" selected="@(detectedCode == "+31")">+31 (Netherlands)</option>
-                                        <option value="+32" selected="@(detectedCode == "+32")">+32 (Belgium)</option>
-                                        <option value="+41" selected="@(detectedCode == "+41")">+41 (Switzerland)</option>
-                                        <option value="+46" selected="@(detectedCode == "+46")">+46 (Sweden)</option>
-                                        <option value="+47" selected="@(detectedCode == "+47")">+47 (Norway)</option>
-                                        <option value="+45" selected="@(detectedCode == "+45")">+45 (Denmark)</option>
-                                        <option value="+358" selected="@(detectedCode == "+358")">+358 (Finland)</option>
-                                        <option value="+351" selected="@(detectedCode == "+351")">+351 (Portugal)</option>
-                                        <option value="+30" selected="@(detectedCode == "+30")">+30 (Greece)</option>
-                                        <option value="+48" selected="@(detectedCode == "+48")">+48 (Poland)</option>
-                                        <option value="+91" selected="@(detectedCode == "+91")">+91 (India)</option>
-                                        <option value="+86" selected="@(detectedCode == "+86")">+86 (China)</option>
-                                        <option value="+81" selected="@(detectedCode == "+81")">+81 (Japan)</option>
-                                        <option value="+82" selected="@(detectedCode == "+82")">+82 (South Korea)</option>
-                                        <option value="+65" selected="@(detectedCode == "+65")">+65 (Singapore)</option>
-                                        <option value="+852" selected="@(detectedCode == "+852")">+852 (Hong Kong)</option>
-                                        <option value="+27" selected="@(detectedCode == "+27")">+27 (South Africa)</option>
-                                        <option value="+55" selected="@(detectedCode == "+55")">+55 (Brazil)</option>
-                                        <option value="+52" selected="@(detectedCode == "+52")">+52 (Mexico)</option>
-                                        <option value="+54" selected="@(detectedCode == "+54")">+54 (Argentina)</option>
+                                    <select asp-for="SelectedCountryCode" class="form-select form-control @_mobileValidity" style="max-width: 180px;">
+                                        <option value="+44" selected="+44">+44 (UK)</option>
+                                        <option value="+1" selected="+1">+1 (US/Canada)</option>
+                                        <option value="+61" selected="+61">+61 (Australia)</option>
+                                        <option value="+64" selected="+64">+64 (New Zealand)</option>
+                                        <option value="+353" selected="+353">+353 (Ireland)</option>
+                                        <option value="+33" selected="+33">+33 (France)</option>
+                                        <option value="+49" selected="+49">+49 (Germany)</option>
+                                        <option value="+34" selected="+34">+34 (Spain)</option>
+                                        <option value="+39" selected="+39">+39 (Italy)</option>
+                                        <option value="+31" selected="+31">+31 (Netherlands)</option>
+                                        <option value="+32" selected="+32">+32 (Belgium)</option>
+                                        <option value="+41" selected="+41">+41 (Switzerland)</option>
+                                        <option value="+46" selected="+46">+46 (Sweden)</option>
+                                        <option value="+47" selected="+47">+47 (Norway)</option>
+                                        <option value="+45" selected="+45">+45 (Denmark)</option>
+                                        <option value="+358" selected="+358">+358 (Finland)</option>
+                                        <option value="+351" selected="+351">+351 (Portugal)</option>
+                                        <option value="+30" selected="+30">+30 (Greece)</option>
+                                        <option value="+48" selected="+48">+48 (Poland)</option>
+                                        <option value="+91" selected="+91">+91 (India)</option>
+                                        <option value="+86" selected="+86">+86 (China)</option>
+                                        <option value="+81" selected="+81">+81 (Japan)</option>
+                                        <option value="+82" selected="+82">+82 (South Korea)</option>
+                                        <option value="+65" selected="+65">+65 (Singapore)</option>
+                                        <option value="+852" selected="+852">+852 (Hong Kong)</option>
+                                        <option value="+27" selected="+27">+27 (South Africa)</option>
+                                        <option value="+55" selected="+55">+55 (Brazil)</option>
+                                        <option value="+52" selected="+52">+52 (Mexico)</option>
+                                        <option value="+54" selected="+54">+54 (Argentina)</option>
                                     </select>
-                                    <input type="tel" class="form-control" id="mobileNumber" name="mobileNumber" />
-                                </div>
-                                <div class="valid-feedback">
-                                    Looks good!
+                                    <input asp-for="MobileNumber" type="tel" class="form-control @_mobileValidity" />
                                 </div>
                                 <div class="invalid-feedback">
                                     Please provide a valid phone number for the selected country.
@@ -150,21 +207,32 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="message" class="form-label">Message <span class="text-muted">(required)</span></label>
-                                <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
-                                <div class="valid-feedback">
-                                    Looks good!
-                                </div>
+                                <label asp-for="Message" class="form-label">Message <span class="text-muted">(required)</span></label>
+                                <textarea asp-for="Message" class="form-control @_messageValidity" rows="5" required></textarea>
                                 <div class="invalid-feedback">
                                     We're gonna need your message, otherwise why are you trying to contact me!?
                                 </div>
                             </div>
 
+                            @if (Model.Problems.Any())
+                            {
+                                <div class="mb-3">
+                                    <div class="alert alert-danger">
+                                        @foreach(var problem in Model.Problems)
+                                        {
+                                            foreach(var issue in problem.Issues)
+                                            {
+                                                <p>@issue</p>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
                             <div class="text-right">
-                                <button type="submit" class="btn btn-outline-success btn-sm">Send</button>
+                                <button id="send-message-button" type="submit" class="btn btn-secondary btn-sm">Send</button>
                             </div>
                         </form>
-
                     }
                 </div>
             </div>

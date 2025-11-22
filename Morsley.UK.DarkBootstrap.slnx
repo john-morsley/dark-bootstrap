@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Morsley.UK.DarkBootstrap.UI/Morsley.UK.DarkBootstrap.UI.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Morsley.UK.DarkBootstrap.UI.IntegrationTests/Morsley.UK.DarkBootstrap.UI.IntegrationTests.csproj" Id="cafa65d6-5ab4-45ba-841d-eb96b62b5dd9" />
+  </Folder>
 </Solution>

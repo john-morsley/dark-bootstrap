@@ -1,4 +1,4 @@
-namespace Morsley.UK.DarkBootstrap.UI.Validation;
+namespace Morsley.UK.DarkBootstrap.UI.Validators;
 
 public class SmtpSettingsValidator : IValidateOptions<SmtpSettings>
 {

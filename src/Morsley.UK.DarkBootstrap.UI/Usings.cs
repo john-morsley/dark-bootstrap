@@ -4,6 +4,7 @@ global using MailKit.Security;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Extensions.Options;
 global using MimeKit;
+global using Morsley.UK.DarkBootstrap.UI.Helpers;
 global using Morsley.UK.DarkBootstrap.UI.Models;
-global using Morsley.UK.DarkBootstrap.UI.Validation;
+global using Morsley.UK.DarkBootstrap.UI.Validators;
 global using PhoneNumbers;

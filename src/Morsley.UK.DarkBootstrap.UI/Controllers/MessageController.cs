@@ -1,7 +1,10 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.VisualBasic;
 using MimeKit;
 using Morsley.UK.DarkBootstrap.UI.Helpers;
+using Morsley.UK.DarkBootstrap.UI.Validators;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace Morsley.UK.DarkBootstrap.UI.Controllers;
 
@@ -17,40 +20,15 @@ public class MessageController : Controller
         _smtpSettings = smtpSettings;
     }
 
+    [HttpGet]
     public IActionResult Index()
     {
         var detectedCountryCode = DetectCountryCodeFromRequest();
-        ViewData["DetectedCountryCode"] = detectedCountryCode;
-        return View();
-    }
-
-    [HttpGet]
-    public IActionResult ValidateEmail(string email)
-    {
-        _logger.LogInformation(message: $"ValidateEmail: '{email}'");
-
-        if (string.IsNullOrWhiteSpace(email))
+        var sendMessage = new SendMessageViewModel
         {
-            return Json(new { isValid = true }); // Empty is valid since it's optional
-        }
-
-        var isValid = EmailHelper.IsValidEmail(email);
-
-        _logger.LogInformation(message: $"ValidateEmail: '{email}', Is Valid?: {(isValid ? "Yes" : "No")}");
-
-        return Json(new { isValid });
-    }
-
-    [HttpGet]
-    public IActionResult ValidatePhone(string countryCode, string mobileNumber)
-    {
-        if (string.IsNullOrWhiteSpace(mobileNumber))
-        {
-            return Json(new { isValid = true }); // Empty is valid since it's optional
-        }
-
-        var isValid = PhoneHelper.IsValidPhone(countryCode, mobileNumber);
-        return Json(new { isValid });
+            DetectedCountryCode = detectedCountryCode
+        };
+        return View(sendMessage);
     }
 
     private string? DetectCountryCodeFromRequest()
@@ -121,31 +99,42 @@ public class MessageController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Send(string name, string message, string? email = null, string? countryCode = null, string? mobileNumber = null)
+    //public async Task<IActionResult> Send(string name, string message, string? email = null, string? countryCode = null, string? mobileNumber = null)
+    public async Task<IActionResult> Send(SendMessageViewModel sendMessage)
     {
-        _logger.LogInformation("Message requested from {Name}: {Message}", name, message);
-        
+        _logger.LogInformation("Message requested from {Name}: {Message}", sendMessage.Name, sendMessage.Message);
+
+        if (sendMessage.DetectedCountryCode != sendMessage.SelectedCountryCode)
+        {
+            sendMessage.DetectedCountryCode = sendMessage.SelectedCountryCode;
+        }
+
+        if (!IsSendMessageIsValid(sendMessage))
+        {            
+            return View("Index", sendMessage);
+        }
+
         try
         {
             var emailMessage = new MimeMessage();
             emailMessage.From.Add(new MailboxAddress(_smtpSettings.Value.FromName, _smtpSettings.Value.FromAddress));
             emailMessage.To.Add(new MailboxAddress(_smtpSettings.Value.ToName, _smtpSettings.Value.ToAddress));
-            emailMessage.Subject = $"Message from {name}";
-            
-            var bodyText = $"From: {name}";
-            
-            if (!string.IsNullOrWhiteSpace(email))
+            emailMessage.Subject = $"Message from {sendMessage.Name}";
+
+            var bodyText = $"From: {sendMessage.Name}";
+
+            if (!string.IsNullOrWhiteSpace(sendMessage.EmailAddress))
             {
-                bodyText += $"\nEmail: {email}";
+                bodyText += $"\nEmail: {sendMessage.EmailAddress}";
             }
-            
-            if (!string.IsNullOrWhiteSpace(countryCode) && !string.IsNullOrWhiteSpace(mobileNumber))
+
+            if (!string.IsNullOrWhiteSpace(sendMessage.SelectedCountryCode) && !string.IsNullOrWhiteSpace(sendMessage.MobileNumber))
             {
-                bodyText += $"\nMobile: {countryCode} {mobileNumber}";
+                bodyText += $"\nMobile: {sendMessage.SelectedCountryCode} {sendMessage.MobileNumber}";
             }
-            
-            bodyText += $"\n\nMessage:\n{message}";
-            
+
+            bodyText += $"\n\nMessage:\n{sendMessage.Message}";
+
             var bodyBuilder = new BodyBuilder
             {
                 TextBody = bodyText
@@ -153,33 +142,47 @@ public class MessageController : Controller
             emailMessage.Body = bodyBuilder.ToMessageBody();
 
             using var smtpClient = new SmtpClient();
-            
+
             if (_smtpSettings.Value.SkipCertificateValidation)
             {
                 smtpClient.ServerCertificateValidationCallback = (s, c, h, e) => true;
             }
-            
+
             await smtpClient.ConnectAsync(
                 _smtpSettings.Value.Server, 
                 _smtpSettings.Value.Port, 
                 _smtpSettings.Value.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
-            
+
             await smtpClient.AuthenticateAsync(
                 _smtpSettings.Value.Username, 
                 _smtpSettings.Value.Password);
-            
+
             await smtpClient.SendAsync(emailMessage);
             await smtpClient.DisconnectAsync(true);
-            
+
             _logger.LogInformation("Email sent successfully to {ToAddress}", _smtpSettings.Value.ToAddress);
-            ViewData["MessageSent"] = true;
+
+            sendMessage.SendOutcomeStatus = "Success";
+            sendMessage.SendOutcomeMessage = "Message sent successfully.";
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error trying to send the message");
-            ModelState.AddModelError(string.Empty, "There was a problem sending your message. Please try again later.");
+            //    ModelState.AddModelError(string.Empty, "There was a problem sending your message. Please try again later.");
+            sendMessage.SendOutcomeStatus = "Failure";
+            sendMessage.SendOutcomeMessage = "There was a problem sending your message. Please try again later.";
         }
 
-        return View("Index");
+        return View("Index", sendMessage);
+    }
+
+    private bool IsSendMessageIsValid(SendMessageViewModel sendMessage)
+    {
+        var validator = new MessageValidator();
+        var problems = validator.Validate(sendMessage);
+
+        sendMessage.Problems = problems;
+
+        return !problems.Any();        
     }
 }

@@ -1,3 +1,5 @@
+using Morsley.UK.DarkBootstrap.UI.Validators;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOptions<SmtpSettings>()

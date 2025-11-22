@@ -1,79 +1,82 @@
 (function () {
 
     'use strict';
-    
-    // Email validation via AJAX
-    function validateEmailViaAjax(email, callback) {
-        fetch('/Message/ValidateEmail?email=' + encodeURIComponent(email))
-            .then(response => response.json())
-            .then(data => callback(data.isValid))
-            .catch(error => {
-                console.error('Email validation error:', error);
-                callback(false);
-            });
-    }
-    
-    // Validation function called when send button is clicked
-    function validateForm() {
 
-        console.log('Validate form called');
-
-        debugger;
-
-        var form = $('.needs-validation')[0];
-        var emailInput = $('#email');
-        var email = emailInput.val().trim();
-        
-        // Check HTML5 validation first
-        if (!form.checkValidity()) {
-            $(form).addClass('was-validated');
-            return false;
-        }
-        
-        // If email is empty, allow submit
-        if (email === '') {
-            console.log('No email provided, submitting form');
-            return true;
-        }
-        
-        // Validate email via AJAX
-        console.log('Validating email:', email);
-        validateEmailViaAjax(email, function(isValid) {
-            console.log('Email validation result:', isValid);
-            
-            if (isValid) {
-                emailInput[0].setCustomValidity('');
-                emailInput.removeClass('is-invalid').addClass('is-valid');
-                $(form).addClass('was-validated');
-                form.submit();
-            } else {
-                emailInput[0].setCustomValidity('Please enter a valid email address');
-                emailInput.removeClass('is-valid').addClass('is-invalid');
-                $(form).addClass('was-validated');
-            }
-        });
-        
-        return false; // Prevent default submit while AJAX is processing
-    }
+    const nameInputId = 'Name';
+    const emailInputId = 'EmailAddress';
+    const selectedCountryCodeInputId = 'SelectedCountryCode';
+    const mobileInputId = 'MobileNumber';
+    const messageInputId = 'Message';
     
-    // Intercept send button click
     $(document).ready(function () {
 
-        console.log('jQuery ready - setting up send button handler');
-        
-        $('button[type="submit"]').on('click', function(e) {
-            console.log('Send button clicked');
-            e.preventDefault();
-            validateForm();
+        let nameInput = $('#' + nameInputId);
+        $(nameInput).on('input', function () {
+            clearValidation();
         });
-        
-        // Also intercept form submit event
-        $('.needs-validation').on('submit', function(e) {
-            console.log('Form submit event');
-            e.preventDefault();
-            validateForm();
+
+        let emailInput = $('#' + emailInputId);
+        $(emailInput).on('input', function () {
+            clearValidation();
+            var validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@._+%-';
+            var cleaned = '';
+            for (var i = 0; i < this.value.length; i++) {
+                var char = this.value[i];
+                if (validChars.indexOf(char) !== -1) {
+                    cleaned += char;
+                }
+            }
+            this.value = cleaned;
+        });
+
+        let countryCodeSelect = $('#SelectedCountryCode');
+        let detectedCountryCode = $('#DetectedCountryCode').val();
+        if (detectedCountryCode) {
+            countryCodeSelect.find('option').each(function () {
+                const value = $(this).val();
+                if (value === detectedCountryCode) {
+                    $(this).prop('selected', true);
+                    return false;
+                }
+            });
+        }
+       
+        let selectedCountryCodeInput = $('#' + selectedCountryCodeInputId);
+        $(selectedCountryCodeInput).on('input', function () {
+            clearValidation();
+        });
+
+        let mobileInput = $('#' + mobileInputId);        
+        $(mobileInput).on('input', function () {
+            clearValidation();
+            var cleaned = '';
+            for (var i = 0; i < this.value.length; i++) {
+                var char = this.value[i];
+                if (char >= '0' && char <= '9') {
+                    cleaned += char;
+                }
+            }
+            this.value = cleaned;
+        });
+
+        let messageInput = $('#' + messageInputId);
+        $(messageInput).on('input', function () {
+            clearValidation();
         });
 
     });
+
+    function clearValidation() {
+        let nameInput = $('#' + nameInputId);
+        let emailInput = $('#' + emailInputId);        
+        let selectedCountryCodeInput = $('#' + selectedCountryCodeInputId);
+        let mobileInput = $('#' + mobileInputId);
+        let messageInput = $('#' + messageInputId);
+        $(nameInput).removeClass("is-valid").removeClass("is-invalid");
+        $(emailInput).removeClass("is-valid").removeClass("is-invalid");
+        $(selectedCountryCodeInput).removeClass("is-valid").removeClass("is-invalid");
+        $(mobileInput).removeClass("is-valid").removeClass("is-invalid");
+        $(messageInput).removeClass("is-valid").removeClass("is-invalid");
+    }
 
 })();
